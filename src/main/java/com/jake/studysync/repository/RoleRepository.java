@@ -1,7 +1,6 @@
 package com.jake.studysync.repository;
 
-import com.jake.studysync.model.AuthProvider;
-import com.jake.studysync.model.User;
+import com.jake.studysync.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,15 +8,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface RoleRepository extends JpaRepository<User, UUID> {
+public interface RoleRepository extends JpaRepository<Role, UUID> {
 
-    Optional<User> findByEmail(String email);
+    Optional<Role> findById(long id);
 
-    Optional<User> findByUsername(String username);
-
-    Optional<User> findByProviderAndProviderId( AuthProvider provider, String providerId);
-
-    boolean existsByEmail(String email);
-
-    boolean existsByUsername(String username);
+    Optional<Role> findByName(String username);
 }

@@ -1,1 +1,118 @@
-spring.application.name=StudySync
+spring:
+  application:
+    name: studySync
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/socialauth}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      jedis:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy}
+            scope: email,profile
+            redirect-uri: ${BASE_URL:http://localhost:8080}/login/oauth2/code/google
+          twitter:
+            client-id: ${TWITTER_CLIENT_ID:dummy}
+            client-secret: ${TWITTER_CLIENT_SECRET:dummy}
+            scope: users.read,tweet.read
+            redirect-uri: ${BASE_URL:http://localhost:8080}/login/oauth2/code/twitter
+          facebook:
+#            client-id: ${FACEBOOK_CLIENT_ID:dummy}
+#            client-secret: ${FACEBOOK_CLIENT_SECRET:dummy}
+            client-id: 1234155162071107
+            client-secret: def8e97f8328b0030be9ca077eb60b54
+            scope: email,public_profile
+            redirect-uri: ${BASE_URL:http://localhost:8080}/login/oauth2/code/facebook
+        provider:
+          twitter:
+            authorization-uri: https://twitter.com/i/oauth2/authorize
+            token-uri: https://api.twitter.com/2/oauth2/token
+            user-info-uri: https://api.twitter.com/2/users/me
+            jwk-set-uri: https://api.twitter.com/2/oauth2/jwks
+            user-name-attribute: data.id
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        retries: 3
+    consumer:
+      group-id: user-event-processor
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "userEvent:com.example.socialauth.event.UserEvent"
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: ${JWT_EXPIRATION:900000}  # 15 minutes
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
+
+app:
+  rate-limit:
+    requests-per-minute: ${RATE_LIMIT:60}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
+logging:
+  level:
+    com.example.socialauth: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.kafka: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,cache,kafka
+  endpoint:
+    health:
+      show-details: always
